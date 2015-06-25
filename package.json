@@ -1,0 +1,24 @@
+{
+  "name": "peervision",
+  "version": "0.0.0",
+  "description": "(WIP) a p2p live streaming protocol",
+  "main": "index.js",
+  "dependencies": {
+    "bitfield": "^1.1.1",
+    "duplexify": "^3.4.2",
+    "end-of-stream": "^1.1.0",
+    "length-prefixed-stream": "^1.3.0",
+    "protocol-buffers": "^3.1.2"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mafintosh/peervision.git"
+  },
+  "author": "Mathias Buus (@mafintosh)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mafintosh/peervision/issues"
+  },
+  "homepage": "https://github.com/mafintosh/peervision"
+}

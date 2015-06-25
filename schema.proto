@@ -1,0 +1,21 @@
+message Request {
+  required uint64 id = 1;
+  required uint64 index = 2;
+}
+
+message Response {
+  required uint64 id = 1;
+  optional string error = 2;
+  optional bytes signature = 3;
+  optional bytes data = 4;
+  repeated uint64 indexes = 5;
+  repeated bytes hashes = 6;
+}
+
+message Have {
+  required uint64 index = 1;
+}
+
+message Bitfield {
+  required bytes bitfield = 1;
+}
