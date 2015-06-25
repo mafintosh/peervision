@@ -5,6 +5,9 @@ var events = require('events')
 
 var MAX_FIELD = 5 * 1024 * 1024
 
+// TODO: add the hashes and flat-tree
+// and store them in a level + store
+// the actual data in a file/blob-store
 module.exports = function () {
   var that = new events.EventEmitter()
   var blocks = []
