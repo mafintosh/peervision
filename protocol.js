@@ -34,8 +34,8 @@ Protocol.prototype.have = function (index) {
   this._encode(2, messages.Have, {index: index})
 }
 
-Protocol.prototype.bitfield = function (bitfield) {
-  this._encode(3, messages.Bitfield, {bitfield: bitfield})
+Protocol.prototype.bitfield = function (bitfield, head) {
+  this._encode(3, messages.Bitfield, {bitfield: bitfield, head: head})
 }
 
 Protocol.prototype._decode = function (data) {
@@ -61,7 +61,7 @@ Protocol.prototype._decode = function (data) {
 
     case 3:
     var msg = messages.Bitfield.decode(data, 1)
-    this.emit('bitfield', msg.bitfield)
+    this.emit('bitfield', msg.bitfield, msg.head)
     return
   }
 

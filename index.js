@@ -65,7 +65,7 @@ module.exports = function () {
     that.emit('head', index)
   }
 
-  that.head = 0
+  that.head = -1
 
   that.createStream = function () {
     var peer = protocol()
@@ -83,15 +83,9 @@ module.exports = function () {
       update()
     })
 
-    peer.on('bitfield', function (data) {
+    peer.on('bitfield', function (data, head) {
       peer.blocks = bitfield(data, {grow: MAX_FIELD})
-      var len = 8 * data.length
-      for (var i = len - 1; i >= Math.max(0, len - 8); i--) {
-        if (peer.blocks.get(i)) {
-          updateHead(i)
-          break
-        }
-      }
+      updateHead(head)
       update()
     })
 
@@ -100,7 +94,7 @@ module.exports = function () {
       peers.splice(peers.indexOf(peer), 1)
     })
 
-    peer.bitfield(haves.buffer)
+    peer.bitfield(haves.buffer, that.head < 0 ? 0 : that.head)
 
     return peer
   }

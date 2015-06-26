@@ -18,4 +18,5 @@ message Have {
 
 message Bitfield {
   required bytes bitfield = 1;
+  required uint64 head = 2;
 }
