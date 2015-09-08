@@ -1,6 +1,6 @@
 {
   "name": "peervision",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "(WIP) a p2p live streaming protocol",
   "main": "index.js",
   "dependencies": {
