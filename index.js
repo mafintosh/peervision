@@ -56,14 +56,12 @@ Peervision.prototype.createStream = function () {
   stream.on('have', function (have) {
     if (have.index > stream.head) stream.head = have.index
     stream.blocks.set(have.index)
-  // console.error('remote have', have.index)
     self._update()
   })
 
   stream.on('request', function (request) {
     var hashes = []
     for (var i = 0; i < request.tree.length; i++) {
-      // console.error('request for', request.tree[i], self.tree.length)
       hashes[i] = self._getTree(request.tree[i])
     }
 
@@ -128,7 +126,6 @@ Peervision.prototype._get = function (peer, index, cb) {
       needed = tree.parent(needed)
     }
 
-// console.error('blocks', treeIndex, self.tree.length)
     peer.request({index: index, tree: treeIndexes, digest: false}, function (err, res) {
       if (err) return cb(err)
 
@@ -167,9 +164,6 @@ Peervision.prototype._get = function (peer, index, cb) {
       self.digests[index] = digest
       self.signatures[index] = res.signature
       self._have(index)
-
-      // console.log('After fetching block')
-      // debugTree(self.tree)
 
       cb(null, res.data)
     })
@@ -213,9 +207,9 @@ Peervision.prototype._getHead = function (peer, cb) {
     }
     prevRootParents.push(root)
   }
-// console.error('heads', treeHead, roots, treeIndexes)
+
   peer.request({index: peerHead, tree: treeIndexes, digest: false, signature: true}, function (err, res) {
-    if (self.blocks.length >= peerHead) return cb() // this request is no longer relevant
+    if (self.blocks.length > peerHead) return cb() // this request is no longer relevant
     if (err) return cb(err)
 
     mergeTree(treeCache, res, treeDups)
