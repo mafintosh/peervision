@@ -56,12 +56,14 @@ Peervision.prototype.createStream = function () {
   stream.on('have', function (have) {
     if (have.index > stream.head) stream.head = have.index
     stream.blocks.set(have.index)
+  // console.error('remote have', have.index)
     self._update()
   })
 
   stream.on('request', function (request) {
     var hashes = []
     for (var i = 0; i < request.tree.length; i++) {
+      // console.error('request for', request.tree[i], self.tree.length)
       hashes[i] = self._getTree(request.tree[i])
     }
 
@@ -126,6 +128,7 @@ Peervision.prototype._get = function (peer, index, cb) {
       needed = tree.parent(needed)
     }
 
+// console.error('blocks', treeIndex, self.tree.length)
     peer.request({index: index, tree: treeIndexes, digest: false}, function (err, res) {
       if (err) return cb(err)
 
@@ -192,27 +195,32 @@ Peervision.prototype._getHead = function (peer, cb) {
   treeIndexes.push(treeHead)
   treeCache.push(HASH_NONE)
 
+  // filter out dups
+  var filter = []
+  for (var j = 0; j < prevRoots.length; j++) {
+    if (roots.indexOf(prevRoots[j]) === -1) filter.push(prevRoots[j])
+  }
+  prevRoots = filter
+
   // migrate from old roots to new roots
   for (var j = 0; j < prevRoots.length; j++) {
     var needed = prevRoots[j]
     var root = -1
-    var cnt = 0
     while ((root = roots.indexOf(needed)) === -1) {
       var sibling = tree.sibling(needed)
       pushIndex(this, sibling, treeIndexes, treeCache, treeDups)
       needed = tree.parent(needed)
-      cnt ++
     }
     prevRootParents.push(root)
   }
-
+// console.error('heads', treeHead, roots, treeIndexes)
   peer.request({index: peerHead, tree: treeIndexes, digest: false, signature: true}, function (err, res) {
     if (self.blocks.length >= peerHead) return cb() // this request is no longer relevant
     if (err) return cb(err)
 
     mergeTree(treeCache, res, treeDups)
 
-    var peerTreeDigest = res.tree[roots.length]
+    var peerTreeDigest = treeCache[roots.length]
     var signed = sodium.crypto_sign_verify_detached(res.signature, peerTreeDigest, self.id)
     if (!signed) return cb(new Error('Tree signature is invalid'))
 
@@ -223,32 +231,33 @@ Peervision.prototype._getHead = function (peer, cb) {
 
     // haxx - this is mostly duplicate code :/
     needed = prevRoots.length ? prevRoots.shift() : -1
+
     var sum = self.tree[needed]
-
     for (var i = roots.length + 1; i < treeCache.length; i++) {
-      var sibling = tree.sibling(needed)
-      var siblingSum = treeCache[i]
+      if (needed !== roots[prevRootParents[0]]) {
+        var sibling = tree.sibling(needed)
+        var siblingSum = treeCache[i]
 
-      if (needed > sibling) { // swap so "sum" is always left sibling
-        var tmp = sum
-        sum = siblingSum
-        siblingSum = tmp
+        if (needed > sibling) { // swap so "sum" is always left sibling
+          var tmp = sum
+          sum = siblingSum
+          siblingSum = tmp
+        }
+        sum = createHash().update(sum).update(siblingSum).digest()
+        needed = tree.parent(needed)
       }
-
-      sum = createHash().update(sum).update(siblingSum).digest()
-      needed = tree.parent(needed)
 
       // quick hash to push the possible parents to the response so they'll get stored on validation
       res.tree.push(sum)
       treeIndexes.push(needed)
 
       if (needed === roots[prevRootParents[0]]) {
-        if (!bufferEquals(treeCache[prevRootParents.shift()], sum)) {
+        var cached = treeCache[prevRootParents.shift()]
+        if (!bufferEquals(cached, sum)) {
           return cb(new Error('Tree checksum mismatch'))
         }
         needed = prevRoots.length ? prevRoots.shift() : -1
         sum = self.tree[needed]
-        console.log(needed)
       }
     }
 
