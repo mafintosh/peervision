@@ -65,6 +65,10 @@ Peervision.prototype.createStream = function () {
       hashes[i] = self._getTree(request.tree[i])
     }
 
+    if (!request.digest) {
+      self.emit('upload', request.index, self.blocks[request.index])
+    }
+
     stream.response({
       id: request.id,
       tree: hashes,
@@ -164,6 +168,7 @@ Peervision.prototype._get = function (peer, index, cb) {
       self.digests[index] = digest
       self.signatures[index] = res.signature
       self._have(index)
+      self.emit('download', index, res.data)
 
       cb(null, res.data)
     })
@@ -263,6 +268,7 @@ Peervision.prototype._getHead = function (peer, cb) {
     self.blocks[peerHead] = res.data
     self.digests[peerHead] = digest
     self.signatures[peerHead] = res.signature
+    self.emit('download', peerHead, res.data)
 
     self._have(peerHead)
 
