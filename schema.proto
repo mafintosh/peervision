@@ -1,22 +1,23 @@
-message Request {
-  required uint64 id = 1;
-  required uint64 index = 2;
-}
-
-message Response {
-  required uint64 id = 1;
-  optional string error = 2;
-  optional bytes signature = 3;
-  optional bytes data = 4;
-  repeated uint64 indexes = 5;
-  repeated bytes hashes = 6;
+message Handshake {
+  optional uint32 version = 1 [default = 1];
+  optional bytes blocks = 2;
 }
 
 message Have {
   required uint64 index = 1;
 }
 
-message Bitfield {
-  required bytes bitfield = 1;
-  required uint64 head = 2;
+message Request {
+  required uint64 id = 1;
+  optional uint64 index = 2;
+  optional bool digest = 3;
+  optional bool signature = 4;
+  repeated uint64 tree = 5;
+}
+
+message Response {
+  required uint64 id = 1;
+  repeated bytes tree = 2;
+  optional bytes signature = 3;
+  optional bytes data = 4;
 }
