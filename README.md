@@ -31,8 +31,18 @@ client.get(0, function (err, buf) {
 client.get(1, function (err, buf) {
   console.log(buf) // some more data
 })
-
 ```
+
+THIS CURRENTLY STILL A WORK IN PROGRESS.
+CURRENTLY ALL DATA IS STORED IN MEMORY.
+
+## How does it work?
+
+peervision uses a flat merkle tree where every bottom
+indirectly verifies the entire previous tree using [flat-tree](https://github.com/mafintosh/flat-tree) and
+signs the latest node using elliptic curve cryptography.
+
+(more details to be added here obviously)
 
 ## License
 
