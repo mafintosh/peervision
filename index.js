@@ -87,14 +87,20 @@ Peervision.prototype.createStream = function () {
 
 Peervision.prototype.get = function (index, cb) {
   if (!cb) cb = noop
+  var self = this
   var i = this._getPeer(index)
 
   if (i === -1) {
-    this._pendingRequests.add([index, cb])
+    this._pendingRequests.add([index, done])
     return
   }
 
-  this._get(this.peers[i], index, cb)
+  this._get(this.peers[i], index, done)
+
+  function done (err, blk) {
+    if (err && err.retry) return self.get(index, cb)
+    cb(err, blk)
+  }
 }
 
 Peervision.prototype._get = function (peer, index, cb) {
