@@ -2,7 +2,7 @@ var events = require('events')
 var util = require('util')
 var protocol = require('./lib/protocol')
 var bufferEquals = require('buffer-equals')
-var sodium = require('sodium').api
+var signatures = require('sodium-signatures')
 var tree = require('flat-tree')
 var crypto = require('crypto')
 var bitfield = require('bitfield')
@@ -17,7 +17,7 @@ module.exports = Peervision
 function Peervision (id, opts) {
   if (!(this instanceof Peervision)) return new Peervision(id, opts)
 
-  this.keypair = id ? {publicKey: id} : sodium.crypto_sign_keypair()
+  this.keypair = id ? {publicKey: id} : signatures.keyPair()
   this.id = this.keypair.publicKey
 
   this.tree = []
@@ -226,7 +226,7 @@ Peervision.prototype._getHead = function (peer, cb) {
     mergeTree(treeCache, res, treeDups)
 
     var peerTreeDigest = treeCache[roots.length]
-    var signed = sodium.crypto_sign_verify_detached(res.signature, peerTreeDigest, self.id)
+    var signed = signatures.verify(peerTreeDigest, res.signature, self.id)
     if (!signed) return cb(new Error('Tree signature is invalid'))
 
     var digest = createHash().update(res.data).digest()
@@ -311,7 +311,7 @@ Peervision.prototype.append = function (block, cb) {
   }
 
   var treeDigest = hash.digest()
-  var signature = sodium.crypto_sign_detached(treeDigest, this.keypair.secretKey)
+  var signature = signatures.sign(treeDigest, this.keypair.secretKey)
 
   this.blocks[index] = block
   this.digests[index] = digest
